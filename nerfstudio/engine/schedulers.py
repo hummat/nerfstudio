@@ -89,6 +89,40 @@ class MultiStepScheduler(Scheduler):
 
 
 @dataclass
+class MultiStepWarmupSchedulerConfig(SchedulerConfig):
+    """Config for multi step scheduler where lr decays by gamma every milestone with warmup"""
+
+    _target: Type = field(default_factory=lambda: MultiStepWarmupScheduler)
+    """target class to instantiate"""
+    max_steps: int = 500000
+    """The maximum number of steps."""
+    gamma: float = 0.33
+    """The learning rate decay factor."""
+    milestones: Tuple[int, ...] = (300000, 400000)
+    """The milestone steps at which to decay the learning rate."""
+    warmup_steps: int = 5000
+    """Number of warmup steps."""
+
+
+class MultiStepWarmupScheduler(Scheduler):
+    """Multi step scheduler where lr decays by gamma every milestone with warmup"""
+
+    config: MultiStepWarmupSchedulerConfig
+
+    def get_scheduler(self, optimizer: Optimizer, lr_init: float) -> LRScheduler:
+        def func(step):
+            if step < self.config.warmup_steps:
+                learning_factor = step / self.config.warmup_steps
+            else:
+                index = np.searchsorted((*self.config.milestones, self.config.max_steps), step, side='left')
+                learning_factor = self.config.gamma ** index
+            return learning_factor
+
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=func)
+        return scheduler
+
+
+@dataclass
 class ExponentialDecaySchedulerConfig(SchedulerConfig):
     """Config for exponential decay scheduler with warmup"""
 
