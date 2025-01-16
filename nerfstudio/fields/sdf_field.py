@@ -178,9 +178,9 @@ class SDFFieldConfig(FieldConfig):
     """base resolution for multi-resolution hash grids"""
     log2_hashmap_size: int = 19
     """log2 hash map size for multi-resolution hash grids"""
-    hash_features_per_level: int = 2
+    features_per_level: int = 2
     """number of features per level for multi-resolution hash grids"""
-    hash_smoothstep: bool = True
+    use_smoothstep: bool = True
     """whether to use smoothstep for multi-resolution hash grids"""
     use_position_encoding: bool = True
     """whether to use positional encoding as input for geometric network"""
@@ -221,9 +221,9 @@ class SDFField(Field):
         self.max_res = self.config.max_res
         self.base_res = self.config.base_res
         self.log2_hashmap_size = self.config.log2_hashmap_size
-        self.features_per_level = self.config.hash_features_per_level
+        self.features_per_level = self.config.features_per_level
         use_hash = True
-        smoothstep = self.config.hash_smoothstep
+        smoothstep = self.config.use_smoothstep
         self.growth_factor = np.exp((np.log(self.max_res) - np.log(self.base_res)) / (self.num_levels - 1))
 
         if self.config.encoding_type == "hash":
