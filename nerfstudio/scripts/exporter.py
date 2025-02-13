@@ -314,6 +314,10 @@ class ExportPoissonMesh(Exporter):
     """Target number of faces for the mesh to texture."""
     std_ratio: float = 10.0
     """Threshold based on STD of the average distances across the point cloud to remove outliers."""
+    depth: int = 9
+    """Depth of the poisson surface reconstruction."""
+    density_quantile: float = 0.1
+    """Quantile of the densities to remove vertices from the mesh."""
 
     def main(self) -> None:
         """Export mesh"""
@@ -363,8 +367,8 @@ class ExportPoissonMesh(Exporter):
             CONSOLE.print("[bold green]:white_check_mark: Saving Point Cloud")
 
         CONSOLE.print("Computing Mesh... this may take a while.")
-        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=9)
-        vertices_to_remove = densities < np.quantile(densities, 0.1)
+        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=self.depth)
+        vertices_to_remove = densities < np.quantile(densities, self.density_quantile)
         mesh.remove_vertices_by_mask(vertices_to_remove)
         print("\033[A\033[A")
         CONSOLE.print("[bold green]:white_check_mark: Computing Mesh")
